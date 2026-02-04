@@ -4,10 +4,24 @@
 #include "Components/VolumetricCloudComponent.h"
 #include "Components/ExponentialHeightFogComponent.h"
 #include "Components/DirectionalLightComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AWeatherController::AWeatherController()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	SetRootComponent(Root);
+
+	CloudyComponent = CreateDefaultSubobject<UVolumetricCloudComponent>(TEXT("CloudyComponent"));
+	CloudyComponent->SetupAttachment(Root);
+
+	FogComponent = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("FogComponent"));
+	FogComponent->SetupAttachment(Root);
+
+	SunLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("SunLight"));
+	SunLight->SetupAttachment(Root);
+
 	WeatherState = Clear;
 	WeekDay = Monday;
 	Hours = 0;
@@ -95,13 +109,13 @@ void AWeatherController::ChangedWeekDay()
 	FString DayName;
 	switch (WeekDay)
 	{
-	case Monday: DayName = "Monday"; break;
-	case Tuesday: DayName = "Tuesday"; break;
-	case Wednesday: DayName = "Wednesday"; break;
-	case Thursday: DayName = "Thursday"; break;
-	case Friday: DayName = "Friday"; break;
-	case Saturday: DayName = "Saturday"; break;
-	case Sunday: DayName = "Sunday"; break;
+	case Monday: DayName = "Понедельник"; break;
+	case Tuesday: DayName = "Вторник"; break;
+	case Wednesday: DayName = "Среда"; break;
+	case Thursday: DayName = "Четверг"; break;
+	case Friday: DayName = "Пятница"; break;
+	case Saturday: DayName = "Суббота"; break;
+	case Sunday: DayName = "Воскресенье"; break;
 	}
 	UE_LOG(LogTemp, Log, TEXT("Today is %s"), *DayName);
 }
@@ -109,16 +123,42 @@ void AWeatherController::ChangedWeekDay()
 void AWeatherController::ChangedHours()
 {
 	UpdateSunRotation();
+	WeatherState = static_cast<EWeatherState>(UKismetMathLibrary::RandomIntegerInRange(0, 3));
+	if (Hours >= 24)
+	{
+		Hours = 0;
+		switch (WeekDay)
+		{
+		default:
+			ChangedWeekDay();
+			break;
+		case Sunday:
+			WeekDay = Monday;
+			ChangedWeekDay();
+			break;
+		}
+		
+	}
 }
 
 void AWeatherController::ChangedMinutes()
 {
 	UpdateSunRotation();
+	if (Minutes >= 60)
+	{
+		Minutes = 0;
+		SetHours(Hours + 1);
+	}
 }
 
 void AWeatherController::ChangedSeconds()
 {
 	UpdateSunRotation();
+	if (Seconds >= 60)
+	{
+		Seconds = 0;
+		SetMinutes(Minutes + 1);
+	}
 }
 
 void AWeatherController::UpdateSunRotation()

@@ -34,7 +34,7 @@ public:
 	class UCameraComponent* Camera;
 	
 	UPROPERTY(VisibleAnywhere, Category="Crouching")
-	ECrouchState CrouchState;
+	TEnumAsByte<ECrouchState> CrouchState;
 	
 protected:
 	void MoveForward(float Value);

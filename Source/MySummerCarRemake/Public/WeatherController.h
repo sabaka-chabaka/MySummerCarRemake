@@ -16,7 +16,7 @@ enum EWeatherState : uint8
 };
 
 UENUM(BlueprintType)
-enum EWeekDay
+enum EWeekDay : uint8
 {
 	Monday,
 	Tuesday,
@@ -42,10 +42,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	UPROPERTY(EditAnywhere, Category="Weather")
-	EWeatherState WeatherState;
+	TEnumAsByte<EWeatherState> WeatherState;
 	
 	UPROPERTY(EditAnywhere, Category="Weather")
-	EWeekDay WeekDay;
+	TEnumAsByte<EWeekDay> WeekDay;
 	
 	UPROPERTY(EditAnywhere, Category="Weather")
 	float Hours;
@@ -90,12 +90,12 @@ public:
 	void UpdateSunRotation();
 	
 protected:
-	UPROPERTY(EditAnywhere, Category="Weather")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
 	class UVolumetricCloudComponent* CloudyComponent;
 	
-	UPROPERTY(EditAnywhere, Category="Weather")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
 	class UExponentialHeightFogComponent* FogComponent;
 
-	UPROPERTY(EditAnywhere, Category="Weather")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
 	class UDirectionalLightComponent* SunLight;
 };
