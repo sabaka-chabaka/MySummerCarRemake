@@ -90,12 +90,12 @@ public:
 	void UpdateSunRotation();
 	
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category="Weather")
 	class UVolumetricCloudComponent* CloudyComponent;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category="Weather")
 	class UExponentialHeightFogComponent* FogComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weather", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, Category="Weather")
 	class UDirectionalLightComponent* SunLight;
 };

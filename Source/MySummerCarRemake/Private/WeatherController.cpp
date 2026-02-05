@@ -9,19 +9,6 @@
 AWeatherController::AWeatherController()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-	SetRootComponent(Root);
-
-	CloudyComponent = CreateDefaultSubobject<UVolumetricCloudComponent>(TEXT("CloudyComponent"));
-	CloudyComponent->SetupAttachment(Root);
-
-	FogComponent = CreateDefaultSubobject<UExponentialHeightFogComponent>(TEXT("FogComponent"));
-	FogComponent->SetupAttachment(Root);
-
-	SunLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("SunLight"));
-	SunLight->SetupAttachment(Root);
-
 	WeatherState = Clear;
 	WeekDay = Monday;
 	Hours = 0;
@@ -40,6 +27,12 @@ void AWeatherController::BeginPlay()
 void AWeatherController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 1 game hour = 5 real minutes (300 real seconds)
+	// 3600 game seconds = 300 real seconds
+	// 1 real second = 12 game seconds
+	float GameSecondsToAdd = DeltaTime * 12.0f;
+	SetSeconds(Seconds + GameSecondsToAdd);
 }
 
 void AWeatherController::SetWeatherState(EWeatherState NewWeatherState)
@@ -83,21 +76,23 @@ void AWeatherController::ChangedWeatherState()
 	{
 	case Clear:
 		CloudyComponent->SetVisibility(false);
-		FogComponent->SetVisibility(false);
+		FogComponent->SetVisibility(true);
+		FogComponent->SetFogDensity(0.05f);
 		break;
 	case Cloudy:
 		CloudyComponent->SetVisibility(true);
-		FogComponent->SetVisibility(false);
+		FogComponent->SetVisibility(true);
+		FogComponent->SetFogDensity(0.05f);
 		break;
 	case Rain:
 		CloudyComponent->SetVisibility(true);
 		FogComponent->SetVisibility(true);
-		FogComponent->SetFogDensity(0.02f);
+		FogComponent->SetFogDensity(1.0f);
 		break;
 	case Fog:
 		CloudyComponent->SetVisibility(false);
 		FogComponent->SetVisibility(true);
-		FogComponent->SetFogDensity(0.05f);
+		FogComponent->SetFogDensity(1.0f);
 		break;
 	default:
 		break;
@@ -127,17 +122,7 @@ void AWeatherController::ChangedHours()
 	if (Hours >= 24)
 	{
 		Hours = 0;
-		switch (WeekDay)
-		{
-		default:
-			ChangedWeekDay();
-			break;
-		case Sunday:
-			WeekDay = Monday;
-			ChangedWeekDay();
-			break;
-		}
-		
+		SetWeekDay(static_cast<EWeekDay>((static_cast<uint8>(WeekDay.GetValue()) + 1) % 7));
 	}
 }
 
@@ -172,13 +157,19 @@ void AWeatherController::UpdateSunRotation()
 	float TotalSeconds = (Hours * 3600.0f) + (Minutes * 60.0f) + Seconds;
 	
 	// Map 0-24h to 0-360 degrees. 
-	// At 12:00 (midday), sun should be at the top (usually Pitch = -90).
-	// At 0:00, sun should be at the bottom (Pitch = 90).
-	// Pitch: -90 (12:00), 0 (18:00), 90 (0:00), 270 (6:00)
-	// Simple mapping: Rotation = (Time/MaxTime) * 360 - 90
+	// 0:00 -> Ratio 0.0 -> SunPitch 90 (Bottom)
+	// 6:00 -> Ratio 0.25 -> SunPitch 180 or 0? 
+	// 12:00 -> Ratio 0.5 -> SunPitch 270 or -90 (Top)
+	// 18:00 -> Ratio 0.75 -> SunPitch 360 or 0?
 	
 	float DayRatio = TotalSeconds / (24.0f * 3600.0f);
-	float SunPitch = (DayRatio * 360.0f) - 90.0f;
+	
+	// Shift by 0.5 so that 12:00 is at the start of the mapping if we want
+	// Or just: SunPitch = (DayRatio * 360.0f) + 90.0f;
+	// 0:00 -> 90 (Down)
+	// 12:00 -> 180 + 90 = 270 (which is -90, Up)
+	
+	float SunPitch = (DayRatio * 360.0f) + 90.0f;
 
 	FRotator NewRotation = FRotator(SunPitch, 0.0f, 0.0f);
 	SunLight->SetRelativeRotation(NewRotation);
