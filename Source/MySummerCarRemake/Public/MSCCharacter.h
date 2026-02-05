@@ -14,6 +14,13 @@ enum ECrouchState : uint8
 	Land
 };
 
+UENUM(BlueprintType)
+enum EKillType : uint8
+{
+	Thirst,
+	Hunger
+};
+
 UCLASS()
 class MYSUMMERCARREMAKE_API AMSCCharacter : public ACharacter
 {
@@ -42,4 +49,85 @@ protected:
 	void TurnAtRate(float Rate);
 	void LookUp(float Value);
 	void Crouch();
+	void Pee();
+	
+	FTimerHandle ThirstKillHandle;
+	FTimerHandle HungerKillHandle;
+	
+public:
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Thirst;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Hunger;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Stress;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Urine;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Fatigue;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Dirtiness;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Money;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Alcohol;
+	
+	UPROPERTY(EditAnywhere, Category="Needs")
+	float Weight;
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetThirst(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetHunger(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetStress(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetUrine(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetFatigue(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetDirtiness(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetMoney(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetAlcohol(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void SetPlayerWeight(float ToSet, bool bAdd);
+	
+	UFUNCTION(BlueprintCallable, Category="Needs")
+	void KillPlayer(EKillType KillType);
+	
+protected:
+	void ChangedThirst();
+	
+	void ChangedHunger();
+	
+	void ChangedStress();
+	
+	void ChangedUrine();
+	
+	void ChangedFatigue();
+	
+	void ChangedDirtiness();
+	
+	void ChangedMoney();
+	
+	void ChangedAlcohol();
+	
+	void ChangedPlayerWeight();
 };

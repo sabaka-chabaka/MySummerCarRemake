@@ -6,6 +6,8 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogWeather, All, All);
+
 AWeatherController::AWeatherController()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -32,7 +34,7 @@ void AWeatherController::Tick(float DeltaTime)
 	// 3600 game seconds = 300 real seconds
 	// 1 real second = 12 game seconds
 	float GameSecondsToAdd = DeltaTime * 12.0f;
-	SetSeconds(Seconds + GameSecondsToAdd);
+	SetSeconds(GameSecondsToAdd, true);
 }
 
 void AWeatherController::SetWeatherState(EWeatherState NewWeatherState)
@@ -47,20 +49,38 @@ void AWeatherController::SetWeekDay(EWeekDay NewWeekDay)
 	ChangedWeekDay();
 }
 
-void AWeatherController::SetHours(float NewHours)
+void AWeatherController::SetHours(float NewHours, bool bAdd)
 {
+	if (bAdd)
+	{
+		Hours += NewHours;
+		ChangedHours();
+		return;
+	}
 	Hours = NewHours;
 	ChangedHours();
 }
 
-void AWeatherController::SetMinutes(float NewMinutes)
+void AWeatherController::SetMinutes(float NewMinutes, bool bAdd)
 {
+	if (bAdd)
+	{
+		Minutes += NewMinutes;
+		ChangedMinutes();
+		return;
+	}
 	Minutes = NewMinutes;
 	ChangedMinutes();
 }
 
-void AWeatherController::SetSeconds(float NewSeconds)
+void AWeatherController::SetSeconds(float NewSeconds, bool bAdd)
 {
+	if (bAdd)
+	{
+		Seconds += NewSeconds;
+		ChangedSeconds();
+		return;
+	}
 	Seconds = NewSeconds;
 	ChangedSeconds();
 }
@@ -112,7 +132,7 @@ void AWeatherController::ChangedWeekDay()
 	case Saturday: DayName = "Суббота"; break;
 	case Sunday: DayName = "Воскресенье"; break;
 	}
-	UE_LOG(LogTemp, Log, TEXT("Today is %s"), *DayName);
+	UE_LOG(LogWeather, Log, TEXT("Today is %s"), *DayName);
 }
 
 void AWeatherController::ChangedHours()
@@ -132,7 +152,7 @@ void AWeatherController::ChangedMinutes()
 	if (Minutes >= 60)
 	{
 		Minutes = 0;
-		SetHours(Hours + 1);
+		SetHours(1, true);
 	}
 }
 
@@ -142,7 +162,7 @@ void AWeatherController::ChangedSeconds()
 	if (Seconds >= 60)
 	{
 		Seconds = 0;
-		SetMinutes(Minutes + 1);
+		SetMinutes(1, true);
 	}
 }
 

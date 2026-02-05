@@ -63,13 +63,13 @@ public:
 	void SetWeekDay(EWeekDay NewWeekDay);
 	
 	UFUNCTION(BlueprintCallable, Category="WeatherController")
-	void SetHours(float NewHours);
+	void SetHours(float NewHours, bool bAdd);
 	
 	UFUNCTION(BlueprintCallable, Category="WeatherController")
-	void SetMinutes(float NewMinutes);
+	void SetMinutes(float NewMinutes, bool bAdd);
 	
 	UFUNCTION(BlueprintCallable, Category="WeatherController")
-	void SetSeconds(float NewSeconds);
+	void SetSeconds(float NewSeconds, bool bAdd);
 	
 	UFUNCTION(BlueprintCallable, Category="WeatherController")
 	void ChangedWeatherState();
