@@ -3,6 +3,7 @@
 #include "MSCHUD.h"
 
 #include "MSCHUDWidget.h"
+#include "SubtitlesWidget.h"
 #include "Blueprint/UserWidget.h"
 
 void AMSCHUD::BeginPlay()
@@ -14,6 +15,14 @@ void AMSCHUD::BeginPlay()
 		if (HUDWidget)
 		{
 			HUDWidget->AddToViewport();
+		}
+	}
+	if (SubtitleWidgetClass)
+	{
+		SubtitleWidget = CreateWidget<USubtitlesWidget>(GetOwningPlayerController(), SubtitleWidgetClass);
+		if (SubtitleWidget)
+		{
+			SubtitleWidget->AddToViewport();
 		}
 	}
 }

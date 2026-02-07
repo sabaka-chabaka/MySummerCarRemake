@@ -21,9 +21,11 @@ AWeatherController::AWeatherController()
 void AWeatherController::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogWeather, Log, TEXT("WeatherController Initializing"));
 	ChangedWeatherState();
 	ChangedWeekDay();
 	UpdateSunRotation();
+	UE_LOG(LogWeather, Log, TEXT("WeatherController Initialized"));
 }
 
 void AWeatherController::Tick(float DeltaTime)

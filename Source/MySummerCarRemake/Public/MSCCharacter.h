@@ -42,6 +42,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category="Crouching")
 	TEnumAsByte<ECrouchState> CrouchState;
+
+	UPROPERTY(VisibleAnywhere, Category="Peeing")
+	bool bPeeing;
 	
 protected:
 	void MoveForward(float Value);
@@ -50,6 +53,7 @@ protected:
 	void LookUp(float Value);
 	void Crouch();
 	void Pee();
+	void StopPee();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;
@@ -81,6 +85,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Needs")
 	float Weight;
+	
+	UPROPERTY(EditAnywhere, Category="References")
+	TSubclassOf<AActor> WeatherController;
 	
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void SetThirst(float ToSet, bool bAdd);

@@ -22,4 +22,10 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "HUD")
 	TSubclassOf<class UUserWidget> HUDWidgetClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Subtitle")
+	class USubtitlesWidget* SubtitleWidget;
+	
+	UPROPERTY(EditAnywhere, Category = "Subtitle")
+	TSubclassOf<class UUserWidget> SubtitleWidgetClass;
 };

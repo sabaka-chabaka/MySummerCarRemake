@@ -21,22 +21,53 @@ AMSCCharacter::AMSCCharacter()
 	Money = 3000;
 	Alcohol = 0;
 	Weight = 75;
+	bPeeing = false;
 }
 
 void AMSCCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogMSCCharacter, Log, TEXT("Character loaded, welcome to My Summer Car!"));
+	ChangedStress();
+	ChangedAlcohol();
+	ChangedDirtiness();
+	ChangedFatigue();
+	ChangedHunger();
+	ChangedMoney();
+	ChangedPlayerWeight();
+	ChangedThirst();
+	ChangedUrine();
 }
 
 void AMSCCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	SetThirst(DeltaTime * (100.0f / 1800.0f), true);     // 30 minutes to fill 100
-	SetHunger(DeltaTime * (100.0f / 3600.0f), true);     // 1 hour to fill 100
-	SetStress(DeltaTime * (100.0f / 3600.0f), true);     // 1 hour to fill 100
-	SetUrine(DeltaTime * (100.0f / 1800.0f), true);      // 30 minutes to fill 100
-	SetFatigue(DeltaTime * (100.0f / 3000.0f), true);    // 50 minutes to fill 100
-	SetDirtiness(DeltaTime * (100.0f / 3600.0f), true);  // 1 hour to fill 100
+
+	// Needs filling formulas based on real time
+	
+	// Thirst: 10 real minutes (600 seconds) to fill 100
+	SetThirst(DeltaTime * (100.0f / 600.0f), true);
+	
+	// Hunger: 15 real minutes (900 seconds) to fill 100
+	SetHunger(DeltaTime * (100.0f / 900.0f), true);
+	
+	// Stress: 20 real minutes (1200 seconds) to fill 100
+	SetStress(DeltaTime * (100.0f / 1200.0f), true);
+	
+	// Urine: 10 real minutes (600 seconds) to fill 100
+	SetUrine(DeltaTime * (100.0f / 600.0f), true);
+	
+	// Fatigue: 30 real minutes (1800 seconds) to fill 100
+	SetFatigue(DeltaTime * (100.0f / 1800.0f), true);
+	
+	// Dirtiness: 20 real minutes (1200 seconds) to fill 100
+	SetDirtiness(DeltaTime * (100.0f / 1200.0f), true);
+
+	if (bPeeing == true && Urine > 0)
+	{
+		SetUrine(-DeltaTime * 10.0f, true); // Decrease urine by 10 per second
+		if (Urine < 0) Urine = 0;
+	}
 }
 
 void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -46,6 +77,7 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMSCCharacter::Crouch);
 	PlayerInputComponent->BindAction("Pee", IE_Pressed, this, &AMSCCharacter::Pee);
+	PlayerInputComponent->BindAction("Pee", IE_Released, this, &AMSCCharacter::StopPee);
 	
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMSCCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMSCCharacter::MoveRight);
@@ -97,6 +129,13 @@ void AMSCCharacter::Crouch()
 void AMSCCharacter::Pee()
 {
 	UE_LOG(LogMSCCharacter, Display, TEXT("Peeing"));
+	bPeeing = true;
+}
+
+void AMSCCharacter::StopPee()
+{
+	UE_LOG(LogMSCCharacter, Display, TEXT("Stopped peeing"));
+	bPeeing = false;
 }
 
 void AMSCCharacter::SetThirst(float ToSet, bool bAdd)
