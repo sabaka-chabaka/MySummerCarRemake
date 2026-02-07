@@ -45,23 +45,23 @@ void AMSCCharacter::Tick(float DeltaTime)
 
 	// Needs filling formulas based on real time
 	
-	// Thirst: 10 real minutes (600 seconds) to fill 100
-	SetThirst(DeltaTime * (100.0f / 600.0f), true);
+	// Thirst: 1.83% / 45 real seconds
+	SetThirst(DeltaTime * (1.83f / 45.0f), true);
 	
-	// Hunger: 15 real minutes (900 seconds) to fill 100
-	SetHunger(DeltaTime * (100.0f / 900.0f), true);
+	// Hunger: 1.25% / 45 real seconds
+	SetHunger(DeltaTime * (1.25f / 45.0f), true);
 	
-	// Stress: 20 real minutes (1200 seconds) to fill 100
-	SetStress(DeltaTime * (100.0f / 1200.0f), true);
+	// Stress: 1% / 45 real seconds
+	SetStress(DeltaTime * (1.0f / 45.0f), true);
 	
-	// Urine: 10 real minutes (600 seconds) to fill 100
-	SetUrine(DeltaTime * (100.0f / 600.0f), true);
+	// Urine: 1.56% / 45 real seconds
+	SetUrine(DeltaTime * (1.56f / 45.0f), true);
 	
-	// Fatigue: 30 real minutes (1800 seconds) to fill 100
-	SetFatigue(DeltaTime * (100.0f / 1800.0f), true);
+	// Fatigue: 0.56% / 45 real seconds
+	SetFatigue(DeltaTime * (0.56f / 45.0f), true);
 	
-	// Dirtiness: 20 real minutes (1200 seconds) to fill 100
-	SetDirtiness(DeltaTime * (100.0f / 1200.0f), true);
+	// Dirtiness: 1% / 45 real seconds
+	SetDirtiness(DeltaTime * (1.0f / 45.0f), true);
 
 	if (bPeeing == true && Urine > 0)
 	{
