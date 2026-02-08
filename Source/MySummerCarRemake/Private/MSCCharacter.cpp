@@ -3,6 +3,7 @@
 #include "MySummerCarRemake/Public/MSCCharacter.h"
 
 #include "InteractInterface.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
 
@@ -64,7 +65,14 @@ void AMSCCharacter::Tick(float DeltaTime)
 	SetUrine(DeltaTime * (0.56f / 45.0f), true);
 	
 	// Fatigue: 0.56% / 45 real seconds
-	SetFatigue(DeltaTime * (0.21f / 45.0f), true);
+	if (GetCharacterMovement()->IsMovementInProgress())
+	{
+		SetFatigue(DeltaTime * (1.21f / 45.0f), true);
+	}
+	else
+	{
+		SetFatigue(DeltaTime * (0.21f / 45.0f), true);
+	}
 	
 	// Dirtiness: 1% / 45 real seconds
 	SetDirtiness(DeltaTime * (0.50f / 45.0f), true);
@@ -136,14 +144,17 @@ void AMSCCharacter::Crouch()
 		case Stand:
 			SetActorScale3D(FVector(0.5f, 0.5f, 0.5f));
 			CrouchState = Crouched;
+			GetCharacterMovement()->MaxWalkSpeed = 300;
 			break;
 		case Crouched:
 			SetActorScale3D(FVector(0.1f, 0.1f, 0.1f));
 			CrouchState = Land;
+			GetCharacterMovement()->MaxWalkSpeed = 100;
 			break;
 		case Land:
 			SetActorScale3D(FVector(1.0f, 1.0f, 1.0f));
 			CrouchState = Stand;
+			GetCharacterMovement()->MaxWalkSpeed = 600;
 			break;
 	}
 }
