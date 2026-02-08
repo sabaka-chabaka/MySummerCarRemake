@@ -17,11 +17,11 @@ void UMSCHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	if (AMSCCharacter* MSCC = Cast<AMSCCharacter>(GetOwningPlayerPawn()))
 	{
 		MoneyBlock->SetText(FText::AsNumber(MSCC->Money));
-		ThirstBar->SetPercent(MSCC->Thirst);
-		HungerBar->SetPercent(MSCC->Hunger);
-		StressBar->SetPercent(MSCC->Stress);
-		UrineBar->SetPercent(MSCC->Urine);
-		FatigueBar->SetPercent(MSCC->Fatigue);
-		DirtinessBar->SetPercent(MSCC->Dirtiness);
+		ThirstBar->SetPercent(MSCC->Thirst / 100.0f);
+		HungerBar->SetPercent(MSCC->Hunger / 100.0f);
+		StressBar->SetPercent(MSCC->Stress / 100.0f);
+		UrineBar->SetPercent(MSCC->Urine / 100.0f);
+		FatigueBar->SetPercent(MSCC->Fatigue / 100.0f);
+		DirtinessBar->SetPercent(MSCC->Dirtiness / 100.0f);
 	}
 }
