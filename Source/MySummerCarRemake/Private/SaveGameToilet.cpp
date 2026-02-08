@@ -63,3 +63,8 @@ void ASaveGameToilet::Save()
 		}
 	}
 }
+
+void ASaveGameToilet::Interact_Implementation(AActor* Interactor)
+{
+	Save();
+}

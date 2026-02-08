@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractInterface.h"
 #include "GameFramework/Actor.h"
 #include "SaveGameToilet.generated.h"
 
 UCLASS()
-class MYSUMMERCARREMAKE_API ASaveGameToilet : public AActor
+class MYSUMMERCARREMAKE_API ASaveGameToilet : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 
@@ -28,4 +29,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="ToiletSaver")
 	void Save();
+	
+	virtual void Interact_Implementation(AActor* Interactor) override;
 };

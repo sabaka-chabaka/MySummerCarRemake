@@ -39,21 +39,29 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Camera")
 	class UCameraComponent* Camera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Physics")
+	class UPhysicsHandleComponent* PhysicsHandle;
 	
 	UPROPERTY(VisibleAnywhere, Category="Crouching")
 	TEnumAsByte<ECrouchState> CrouchState;
 
 	UPROPERTY(VisibleAnywhere, Category="Peeing")
 	bool bPeeing;
+
+	UPROPERTY(VisibleAnywhere, Category="Physics")
+	FRotator TargetRotation;
 	
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void TurnAtRate(float Rate);
 	void LookUp(float Value);
+	void RotateActorWheel(float Value);
 	void Crouch();
 	void Pee();
 	void StopPee();
+	void Interact();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;

@@ -1,8 +1,10 @@
 // 2026 sabaka-chabaka
 
-#include "MySummerCarRemake/Public/MSCCharacter.h"
-
+#include "InteractInterface.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
+
+#include "MySummerCarRemake/Public/MSCCharacter.h"
 
 #include "Camera/CameraComponent.h"
 
@@ -11,6 +13,9 @@ AMSCCharacter::AMSCCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(RootComponent);
+
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
+
 	CrouchState = Stand;
 	Thirst = 0;
 	Hunger = 0;
@@ -22,6 +27,7 @@ AMSCCharacter::AMSCCharacter()
 	Alcohol = 0;
 	Weight = 75;
 	bPeeing = false;
+	TargetRotation = FRotator::ZeroRotator;
 }
 
 void AMSCCharacter::BeginPlay()
@@ -68,6 +74,12 @@ void AMSCCharacter::Tick(float DeltaTime)
 		SetUrine(-DeltaTime * 5.0f, true); // Decrease urine by 10 per second
 		if (Urine < 0) Urine = 0;
 	}
+
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
+	{
+		FVector TargetLocation = Camera->GetComponentLocation() + Camera->GetForwardVector() * 150.0f;
+		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, TargetRotation);
+	}
 }
 
 void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -78,11 +90,13 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMSCCharacter::Crouch);
 	PlayerInputComponent->BindAction("Pee", IE_Pressed, this, &AMSCCharacter::Pee);
 	PlayerInputComponent->BindAction("Pee", IE_Released, this, &AMSCCharacter::StopPee);
+	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMSCCharacter::Interact);
 	
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMSCCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMSCCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("TurnAtRate", this, &AMSCCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMSCCharacter::LookUp);
+	PlayerInputComponent->BindAxis("RotateActorWheel", this, &AMSCCharacter::RotateActorWheel);
 }
 
 void AMSCCharacter::MoveForward(float Value)
@@ -103,6 +117,14 @@ void AMSCCharacter::TurnAtRate(float Rate)
 void AMSCCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value);
+}
+
+void AMSCCharacter::RotateActorWheel(float Value)
+{
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent() && Value != 0.0f)
+	{
+		TargetRotation.Yaw += Value * 10.0f; // Multiplier for wheel rotation
+	}
 }
 
 void AMSCCharacter::Crouch()
@@ -136,6 +158,48 @@ void AMSCCharacter::StopPee()
 {
 	UE_LOG(LogMSCCharacter, Display, TEXT("Stopped peeing"));
 	bPeeing = false;
+}
+
+void AMSCCharacter::Interact()
+{
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
+	{
+		PhysicsHandle->ReleaseComponent();
+		return;
+	}
+
+	FHitResult Hit;
+	float TraceDistance = 1000.0f;
+	FVector Start = Camera->GetComponentLocation();
+	FVector End = Start + Camera->GetForwardVector() * TraceDistance;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (!HitActor) return;
+
+		// 1. Try Interact
+		if (HitActor->Implements<UInteractInterface>())
+		{
+			IInteractInterface::Execute_Interact(HitActor, this);
+			return;
+		}
+
+		// 2. Try To Pick Up
+		UPrimitiveComponent* HitComponent = Hit.GetComponent();
+		if (HitComponent && HitComponent->IsSimulatingPhysics())
+		{
+			TargetRotation = HitComponent->GetComponentRotation();
+			PhysicsHandle->GrabComponentAtLocationWithRotation(
+				HitComponent,
+				NAME_None,
+				HitComponent->GetComponentLocation(),
+				TargetRotation
+			);
+		}
+	}
 }
 
 void AMSCCharacter::SetThirst(float ToSet, bool bAdd)
@@ -289,35 +353,35 @@ void AMSCCharacter::ChangedHunger()
 
 void AMSCCharacter::ChangedStress()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed stress"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed stress"));
 }
 
 void AMSCCharacter::ChangedUrine()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed urine"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed urine"));
 }
 
 void AMSCCharacter::ChangedFatigue()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed fatigue"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed fatigue"));
 }
 
 void AMSCCharacter::ChangedDirtiness()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed dirtiness"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed dirtiness"));
 }
 
 void AMSCCharacter::ChangedMoney()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed money"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed money"));
 }
 
 void AMSCCharacter::ChangedAlcohol()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed alcohol"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed alcohol"));
 }
 
 void AMSCCharacter::ChangedPlayerWeight()
 {
-	UE_LOG(LogMSCCharacter, Warning , TEXT("Changed weight"));
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed weight"));
 }
