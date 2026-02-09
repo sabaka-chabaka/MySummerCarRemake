@@ -1,7 +1,7 @@
-# My Summer Car Remake
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=300&color=gradient&text=My%20Summer%20Car%20Remake" />
+</p>
 
-## RU
-
-My Summer Car Remake - это игра созданная на основе My Summer Car, чтобы исправить различные баги и добавить новые фичи. А вообще это мой проект для обучения (^///^)
+<h1 align=center><b>MSC Remake</b> is a game running on UE5. The focus of development is on bug fixes, optimization, and adding new features.</h1>
 
 #### for contribute contact me discord: sabakachabaka
