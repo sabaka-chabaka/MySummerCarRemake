@@ -1,8 +1,10 @@
 // 2026 sabaka-chabaka
 
 #include "MySummerCarRemake/Public/MSCCharacter.h"
-
 #include "InteractInterface.h"
+#include "MSCBasePart.h"
+#include "MSCCarBody.h"
+#include "MSCBolt.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
@@ -129,9 +131,29 @@ void AMSCCharacter::LookUp(float Value)
 
 void AMSCCharacter::RotateActorWheel(float Value)
 {
-	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent() && Value != 0.0f)
+	if (Value == 0.0f) return;
+
+	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 	{
-		TargetRotation.Yaw += Value * 10.0f; // Multiplier for wheel rotation
+		TargetRotation.Yaw += Value * 10.0f;
+	}
+	else
+	{
+		FHitResult Hit;
+		float TraceDistance = 250.0f;
+		FVector Start = Camera->GetComponentLocation();
+		FVector End = Start + Camera->GetForwardVector() * TraceDistance;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+		{
+			AMSCBolt* Bolt = Cast<AMSCBolt>(Hit.GetActor());
+			if (Bolt)
+			{
+				Bolt->AdjustStep(Value > 0 ? 1 : -1);
+			}
+		}
 	}
 }
 
@@ -175,6 +197,34 @@ void AMSCCharacter::Interact()
 {
 	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 	{
+		UPrimitiveComponent* GrabbedComp = PhysicsHandle->GetGrabbedComponent();
+		AActor* HeldActor = GrabbedComp->GetOwner();
+		AMSCBasePart* HeldPart = Cast<AMSCBasePart>(HeldActor);
+
+		if (HeldPart)
+		{
+			FHitResult CarHit;
+			float CarTraceDistance = 500.0f;
+			FVector Start = Camera->GetComponentLocation();
+			FVector End = Start + Camera->GetForwardVector() * CarTraceDistance;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(this);
+			Params.AddIgnoredActor(HeldPart);
+
+			if (GetWorld()->LineTraceSingleByChannel(CarHit, Start, End, ECC_Visibility, Params))
+			{
+				AMSCCarBody* Car = Cast<AMSCCarBody>(CarHit.GetActor());
+				if (Car)
+				{
+					if (Car->TryAttachPart(HeldPart))
+					{
+						PhysicsHandle->ReleaseComponent();
+						return;
+					}
+				}
+			}
+		}
+
 		PhysicsHandle->ReleaseComponent();
 		return;
 	}
@@ -191,14 +241,12 @@ void AMSCCharacter::Interact()
 		AActor* HitActor = Hit.GetActor();
 		if (!HitActor) return;
 
-		// 1. Try Interact
 		if (HitActor->Implements<UInteractInterface>())
 		{
 			IInteractInterface::Execute_Interact(HitActor, this);
 			return;
 		}
 
-		// 2. Try To Pick Up
 		UPrimitiveComponent* HitComponent = Hit.GetComponent();
 		if (HitComponent && HitComponent->IsSimulatingPhysics())
 		{
