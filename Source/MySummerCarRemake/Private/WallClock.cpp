@@ -36,8 +36,8 @@ void AWallClock::Tick(float DeltaTime)
 				float HourRatio = fmodf(TotalSeconds, 12.0f * 3600.0f) / (12.0f * 3600.0f);
 				float MinuteRatio = fmodf(TotalSeconds, 3600.0f) / 3600.0f;
 			
-				float HourRotation = (HourRatio * 360.0f) + 90.0f;
-				float MinuteRotation = (MinuteRatio * 360.0f) + 90.0f;
+				float HourRotation = 90.0f - (HourRatio * 360.0f);
+				float MinuteRotation = 90.0f - (MinuteRatio * 360.0f);
 
 				HourHand->SetRelativeRotation(FRotator(0.0f, 0.0f, HourRotation));
 				MinuteHand->SetRelativeRotation(FRotator(0.0f, 0.0f, MinuteRotation));

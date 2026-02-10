@@ -124,8 +124,8 @@ void AMSCCharacter::Tick(float DeltaTime)
 		SetThirst(DeltaTime * ThirstRate, true);
 		if (Alcohol >= 5.0f)
 		{
-			float Chance = FMath::RandRange(1, 500);
-			if (Chance <= 50.0f)
+			float Chance = FMath::RandRange(1, 10000);
+			if (Chance == 1)
 			{
 				PhysicsHandle->ReleaseComponent();
 			}
