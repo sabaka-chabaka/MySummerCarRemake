@@ -2,10 +2,9 @@
 
 #include "MySummerCarRemake/Public/MSCCharacter.h"
 #include "InteractInterface.h"
-#include "MSCBasePart.h"
-#include "MSCCarBody.h"
-#include "MSCBolt.h"
+#include "MSCSaveGameComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
 
@@ -46,6 +45,31 @@ void AMSCCharacter::BeginPlay()
 	ChangedPlayerWeight();
 	ChangedThirst();
 	ChangedUrine();
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ManualSave"), 0))
+	{
+		if (UMSCSaveGameComponent* Save = Cast<UMSCSaveGameComponent>(UGameplayStatics::LoadGameFromSlot(TEXT("ManualSave"), 0)))
+		{
+			SetActorRotation(Save->PlayerRotation);
+			SetActorLocation(Save->PlayerLocation);
+			Thirst = Save->Thirst;
+			Hunger = Save->Hunger;
+			Stress = Save->Stress;
+			Urine = Save->Urine;
+			Fatigue = Save->Fatigue;
+			Dirtiness = Save->Dirtiness;
+			Money = Save->Money;
+			Alcohol = Save->Alcohol;
+			Weight = Save->Weight;
+			if (AWeatherController* WC = Cast<AWeatherController>(UGameplayStatics::GetActorOfClass(GetWorld(), WeatherController)))
+			{
+				WC->SetWeekDay(Save->WeekDay);
+				WC->SetWeatherState(Save->WeatherState);
+				WC->SetHours(Save->Hours, false);
+				WC->SetMinutes(Save->Minutes, false);
+				WC->SetSeconds(Save->Seconds, false);
+			}
+		}
+	}
 }
 
 void AMSCCharacter::Tick(float DeltaTime)
@@ -89,6 +113,23 @@ void AMSCCharacter::Tick(float DeltaTime)
 	{
 		FVector TargetLocation = Camera->GetComponentLocation() + Camera->GetForwardVector() * 150.0f;
 		PhysicsHandle->SetTargetLocationAndRotation(TargetLocation, TargetRotation);
+		float Mass = PhysicsHandle->GrabbedComponent->GetMass();
+		
+		float ThirstRate = FMath::Clamp(
+			Mass / 90.0f,
+			0.1f,
+			3.0f
+		);
+
+		SetThirst(DeltaTime * ThirstRate, true);
+		if (Alcohol >= 5.0f)
+		{
+			float Chance = FMath::RandRange(1, 500);
+			if (Chance <= 50.0f)
+			{
+				PhysicsHandle->ReleaseComponent();
+			}
+		}
 	}
 }
 
@@ -137,24 +178,6 @@ void AMSCCharacter::RotateActorWheel(float Value)
 	{
 		TargetRotation.Yaw += Value * 10.0f;
 	}
-	else
-	{
-		FHitResult Hit;
-		float TraceDistance = 250.0f;
-		FVector Start = Camera->GetComponentLocation();
-		FVector End = Start + Camera->GetForwardVector() * TraceDistance;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
-		{
-			AMSCBolt* Bolt = Cast<AMSCBolt>(Hit.GetActor());
-			if (Bolt)
-			{
-				Bolt->AdjustStep(Value > 0 ? 1 : -1);
-			}
-		}
-	}
 }
 
 void AMSCCharacter::Crouch()
@@ -197,38 +220,10 @@ void AMSCCharacter::Interact()
 {
 	if (PhysicsHandle && PhysicsHandle->GetGrabbedComponent())
 	{
-		UPrimitiveComponent* GrabbedComp = PhysicsHandle->GetGrabbedComponent();
-		AActor* HeldActor = GrabbedComp->GetOwner();
-		AMSCBasePart* HeldPart = Cast<AMSCBasePart>(HeldActor);
-
-		if (HeldPart)
-		{
-			FHitResult CarHit;
-			float CarTraceDistance = 500.0f;
-			FVector Start = Camera->GetComponentLocation();
-			FVector End = Start + Camera->GetForwardVector() * CarTraceDistance;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(this);
-			Params.AddIgnoredActor(HeldPart);
-
-			if (GetWorld()->LineTraceSingleByChannel(CarHit, Start, End, ECC_Visibility, Params))
-			{
-				AMSCCarBody* Car = Cast<AMSCCarBody>(CarHit.GetActor());
-				if (Car)
-				{
-					if (Car->TryAttachPart(HeldPart))
-					{
-						PhysicsHandle->ReleaseComponent();
-						return;
-					}
-				}
-			}
-		}
-
 		PhysicsHandle->ReleaseComponent();
 		return;
 	}
-
+	
 	FHitResult Hit;
 	float TraceDistance = 1000.0f;
 	FVector Start = Camera->GetComponentLocation();
