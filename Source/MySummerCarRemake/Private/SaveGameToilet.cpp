@@ -43,6 +43,7 @@ void ASaveGameToilet::Save()
 			SaveGameInstance->Money = PlayerCharacter->Money;
 			SaveGameInstance->Alcohol = PlayerCharacter->Alcohol;
 			SaveGameInstance->Weight = PlayerCharacter->Weight;
+			SaveGameInstance->Cigarettes = PlayerCharacter->Cigarettes;
 			if (AWeatherController* WeatherController = Cast<AWeatherController>(UGameplayStatics::GetActorOfClass(GetWorld(), PlayerCharacter->WeatherController)))
 			{
 				SaveGameInstance->WeekDay = WeatherController->WeekDay;

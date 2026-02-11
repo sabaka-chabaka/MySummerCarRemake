@@ -3,9 +3,11 @@
 #include "MySummerCarRemake/Public/MSCCharacter.h"
 #include "InteractInterface.h"
 #include "MSCSaveGameComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "NiagaraComponent.h"
 DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
 
 #include "Camera/CameraComponent.h"
@@ -28,8 +30,20 @@ AMSCCharacter::AMSCCharacter()
 	Money = 3000;
 	Alcohol = 0;
 	Weight = 75;
+	Cigarettes = 0;
 	bPeeing = false;
 	TargetRotation = FRotator::ZeroRotator;
+	AlcoholKillLocation = FVector::ZeroVector;
+	RespawnLocation = FVector::ZeroVector;
+	
+	PeeRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PeeRoot"));
+	PeeRoot->SetupAttachment(GetCapsuleComponent());
+
+	PeeRoot->SetRelativeLocation(PeeOffset);
+
+	PeeComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("PeeComponent"));
+	PeeComponent->SetupAttachment(PeeRoot);
+	PeeComponent->bAutoActivate = false;
 }
 
 void AMSCCharacter::BeginPlay()
@@ -45,21 +59,23 @@ void AMSCCharacter::BeginPlay()
 	ChangedPlayerWeight();
 	ChangedThirst();
 	ChangedUrine();
+	ChangedCigarettes();
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ManualSave"), 0))
 	{
 		if (UMSCSaveGameComponent* Save = Cast<UMSCSaveGameComponent>(UGameplayStatics::LoadGameFromSlot(TEXT("ManualSave"), 0)))
 		{
 			SetActorRotation(Save->PlayerRotation);
 			SetActorLocation(Save->PlayerLocation);
-			Thirst = Save->Thirst;
-			Hunger = Save->Hunger;
-			Stress = Save->Stress;
-			Urine = Save->Urine;
-			Fatigue = Save->Fatigue;
-			Dirtiness = Save->Dirtiness;
-			Money = Save->Money;
-			Alcohol = Save->Alcohol;
-			Weight = Save->Weight;
+			SetThirst(Save->Thirst, false);
+			SetHunger(Save->Hunger, false);
+			SetStress(Save->Stress, false);
+			SetUrine(Save->Urine, false);
+			SetFatigue(Save->Fatigue, false);
+			SetDirtiness(Save->Dirtiness, false);
+			SetMoney(Save->Money, false);
+			SetAlcohol(Save->Alcohol, false);
+			SetPlayerWeight(Save->Weight, false);
+			SetCigarettes(Save->Cigarettes, false);
 			if (AWeatherController* WC = Cast<AWeatherController>(UGameplayStatics::GetActorOfClass(GetWorld(), WeatherController)))
 			{
 				WC->SetWeekDay(Save->WeekDay);
@@ -79,7 +95,11 @@ void AMSCCharacter::Tick(float DeltaTime)
 	// Needs filling formulas based on real time
 	
 	// Thirst: 1.83% / 45 real seconds
-	SetThirst(DeltaTime * (0.34f / 45.0f), true);
+	SetThirst(DeltaTime * (1.2f / 45.0f), true);
+	if (Alcohol >= 2.0f)
+	{
+		SetThirst(DeltaTime * (0.8f / 45.0f), true);
+	}
 	
 	// Hunger: 1.25% / 45 real seconds
 	SetHunger(DeltaTime * (0.2f / 45.0f), true);
@@ -131,6 +151,22 @@ void AMSCCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
+	
+	if (PeeComponent && PeeComponent->IsActive())
+	{
+		FVector Dir = GetControlRotation().Vector();
+
+		PeeComponent->SetVectorParameter(
+			FName("User.Direction"),
+			Dir
+		);
+	}
+
+	if (Alcohol >= 0.0f)
+	{
+		ApplyAlcoholSway(DeltaTime);
+		SoberUp(DeltaTime);
+	}
 }
 
 void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -152,17 +188,38 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AMSCCharacter::MoveForward(float Value)
 {
-	AddMovementInput(GetActorForwardVector(), Value);
+	FVector Drift = FVector::ZeroVector;
+	if (Alcohol > 0.f)
+	{
+		float Alpha = Alcohol / 10.0f;
+
+		Drift.X = FMath::FRandRange(-1.f, 1.f) * Alpha * 0.25f;
+		Drift.Y = FMath::FRandRange(-1.f, 1.f) * Alpha * 02.5f;
+	}
+	
+	AddMovementInput(GetActorForwardVector() + Drift, Value);
 }
 
 void AMSCCharacter::MoveRight(float Value)
 {
-	AddMovementInput(GetActorRightVector(), Value);
+	FVector Drift = FVector::ZeroVector;
+	if (Alcohol > 0.f)
+	{
+		float Alpha = Alcohol / 10.0f;
+
+		Drift.X = FMath::FRandRange(-1.f, 1.f) * Alpha * 0.25f;
+		Drift.Y = FMath::FRandRange(-1.f, 1.f) * Alpha * 02.5f;
+	}
+	
+	AddMovementInput(GetActorRightVector() + Drift, Value);
 }
 
 void AMSCCharacter::TurnAtRate(float Rate)
 {
-	AddControllerYawInput(Rate);
+	float Alpha = Alcohol / 10.0f;
+
+	float Noise = FMath::FRandRange(-0.5f, 0.5f) * Alpha;
+	AddControllerYawInput(Rate + Noise);
 }
 
 void AMSCCharacter::LookUp(float Value)
@@ -208,12 +265,20 @@ void AMSCCharacter::Pee()
 {
 	UE_LOG(LogMSCCharacter, Display, TEXT("Peeing"));
 	bPeeing = true;
+	if (PeeComponent)
+	{
+		PeeComponent->Activate(true);
+	}
 }
 
 void AMSCCharacter::StopPee()
 {
 	UE_LOG(LogMSCCharacter, Display, TEXT("Stopped peeing"));
 	bPeeing = false;
+	if (PeeComponent)
+	{
+		PeeComponent->Deactivate();
+	}
 }
 
 void AMSCCharacter::Interact()
@@ -364,9 +429,61 @@ void AMSCCharacter::SetPlayerWeight(float ToSet, bool bAdd)
 	ChangedPlayerWeight();
 }
 
+void AMSCCharacter::SetCigarettes(int ToSet, bool bAdd)
+{
+	if (bAdd)
+	{
+		Cigarettes += ToSet;
+		ChangedCigarettes();
+		return;
+	}
+	Cigarettes = ToSet;
+	ChangedCigarettes();
+}
+
 void AMSCCharacter::KillPlayer(EKillType KillType)
 {
 	UE_LOG(LogMSCCharacter, Warning , TEXT("Player killed"));
+	GetWorld()->GetTimerManager().SetTimer(RespawnTimerHandle, [this, KillType]()
+	{
+		RespawnPlayer(KillType);
+	}, 5, false);
+}
+
+void AMSCCharacter::RespawnPlayer(EKillType KillType)
+{
+	//some logic
+	if (KillType == EKillType::Alcohol)
+	{
+		SetActorLocation(AlcoholKillLocation);
+	}
+	else
+	{
+		SetActorLocation(RespawnLocation);
+	}
+}
+
+void AMSCCharacter::ApplyAlcoholSway(float DeltaTime)
+{
+	if (Alcohol <= 0.f) return;
+
+	float Alpha = FMath::Clamp(Alcohol / 10.0f, 0.f, 1.f);
+
+	float Time = GetWorld()->GetTimeSeconds();
+
+	float PitchOffset = FMath::Sin(Time * 1.3f) * 6.0f * Alpha;
+	float RollOffset  = FMath::Sin(Time * 0.9f + 2.f) * 6.0f * Alpha;
+
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch += PitchOffset;
+	ControlRot.Roll  += RollOffset;
+
+	Controller->SetControlRotation(ControlRot);
+}
+
+void AMSCCharacter::SoberUp(float DeltaTime)
+{
+	Alcohol = FMath::Max(0.f, Alcohol - DeltaTime * 0.2f);
 }
 
 void AMSCCharacter::ChangedThirst()
@@ -433,9 +550,23 @@ void AMSCCharacter::ChangedMoney()
 void AMSCCharacter::ChangedAlcohol()
 {
 	UE_LOG(LogMSCCharacter, Display , TEXT("Changed alcohol"));
+	if (Alcohol >= 10)
+	{
+		KillPlayer(EKillType::Alcohol);
+	}
 }
 
 void AMSCCharacter::ChangedPlayerWeight()
 {
 	UE_LOG(LogMSCCharacter, Display , TEXT("Changed weight"));
+}
+
+void AMSCCharacter::ChangedCigarettes()
+{
+	UE_LOG(LogMSCCharacter, Display , TEXT("Changed cigarettes"));
+}
+
+void AMSCCharacter::RespawnedPlayer()
+{
+	UE_LOG(LogMSCCharacter, Display , TEXT("Respawned player"));
 }

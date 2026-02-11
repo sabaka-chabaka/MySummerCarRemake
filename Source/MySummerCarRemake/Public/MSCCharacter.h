@@ -18,7 +18,8 @@ UENUM(BlueprintType)
 enum EKillType : uint8
 {
 	Thirst,
-	Hunger
+	Hunger,
+	Alcohol
 };
 
 UCLASS()
@@ -52,6 +53,21 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Physics")
 	FRotator TargetRotation;
 	
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* PeeRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	class UNiagaraComponent* PeeComponent;
+
+	UPROPERTY(EditAnywhere, Category="Pee")
+	FVector PeeOffset = FVector(20.f, 0.f, -90.f);
+
+	UPROPERTY(EditAnywhere, Category="Alcohol")
+	FVector AlcoholKillLocation;
+	
+	UPROPERTY(EditAnywhere, Category="Spawning")
+	FVector RespawnLocation;
+	
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -65,6 +81,7 @@ protected:
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;
+	FTimerHandle RespawnTimerHandle;
 	
 public:
 	UPROPERTY(EditAnywhere, Category="Needs")
@@ -93,6 +110,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Needs")
 	float Weight;
+	
+	UPROPERTY(EditAnywhere, Category="Some")
+	int Cigarettes;
 	
 	UPROPERTY(EditAnywhere, Category="References")
 	TSubclassOf<AActor> WeatherController;
@@ -124,25 +144,31 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void SetPlayerWeight(float ToSet, bool bAdd);
 	
+	UFUNCTION(BlueprintCallable, Category="Some")
+	void SetCigarettes(int ToSet, bool bAdd);
+	
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void KillPlayer(EKillType KillType);
 	
+	UFUNCTION(BlueprintCallable, Category="Spawning")
+	void RespawnPlayer(EKillType KillType);
+	
+	UFUNCTION(BlueprintCallable, Category="Alcohol")
+	void ApplyAlcoholSway(float DeltaTime);
+	
+	UFUNCTION(BlueprintCallable, Category="Alcohol")
+	void SoberUp(float DeltaTime);
+	
 protected:
 	void ChangedThirst();
-	
 	void ChangedHunger();
-	
 	void ChangedStress();
-	
 	void ChangedUrine();
-	
 	void ChangedFatigue();
-	
 	void ChangedDirtiness();
-	
 	void ChangedMoney();
-	
 	void ChangedAlcohol();
-	
 	void ChangedPlayerWeight();
+	void ChangedCigarettes();
+	void RespawnedPlayer();
 };

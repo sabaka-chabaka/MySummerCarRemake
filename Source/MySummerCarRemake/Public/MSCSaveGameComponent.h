@@ -47,6 +47,9 @@ public:
 	float Weight;
 	
 	UPROPERTY(VisibleAnywhere, Category = "SaveGame")
+	float Cigarettes;
+	
+	UPROPERTY(VisibleAnywhere, Category = "SaveGame")
 	TEnumAsByte<EWeatherState> WeatherState;
 	
 	UPROPERTY(VisibleAnywhere, Category = "SaveGame")
