@@ -167,6 +167,12 @@ void AMSCCharacter::Tick(float DeltaTime)
 		ApplyAlcoholSway(DeltaTime);
 		SoberUp(DeltaTime);
 	}
+
+	if (Urine <= 0.0f)
+	{
+		bPeeing = false;
+		StopPee();
+	}
 }
 
 void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -264,6 +270,8 @@ void AMSCCharacter::Crouch()
 void AMSCCharacter::Pee()
 {
 	UE_LOG(LogMSCCharacter, Display, TEXT("Peeing"));
+	if (Urine <= 0.0f)
+		return;
 	bPeeing = true;
 	if (PeeComponent)
 	{
@@ -465,25 +473,29 @@ void AMSCCharacter::RespawnPlayer(EKillType KillType)
 
 void AMSCCharacter::ApplyAlcoholSway(float DeltaTime)
 {
-	if (Alcohol <= 0.f) return;
+	if (Alcohol <= 0.f || !Controller)
+		return;
 
 	float Alpha = FMath::Clamp(Alcohol / 10.0f, 0.f, 1.f);
-
 	float Time = GetWorld()->GetTimeSeconds();
 
-	float PitchOffset = FMath::Sin(Time * 1.3f) * 6.0f * Alpha;
-	float RollOffset  = FMath::Sin(Time * 0.9f + 2.f) * 6.0f * Alpha;
+	// Медленные, не синхронные колебания
+	float YawOffset =
+		FMath::Sin(Time * 0.6f) * 0.8f * Alpha;
 
-	FRotator ControlRot = GetControlRotation();
+	float PitchOffset =
+		FMath::Sin(Time * 0.9f + 1.3f) * 0.8f * Alpha;
+
+	FRotator ControlRot = Controller->GetControlRotation();
+	ControlRot.Yaw   += YawOffset;
 	ControlRot.Pitch += PitchOffset;
-	ControlRot.Roll  += RollOffset;
 
 	Controller->SetControlRotation(ControlRot);
 }
 
 void AMSCCharacter::SoberUp(float DeltaTime)
 {
-	Alcohol = FMath::Max(0.f, Alcohol - DeltaTime * 0.2f);
+	Alcohol = FMath::Max(0.f, Alcohol - DeltaTime * 0.005f);
 }
 
 void AMSCCharacter::ChangedThirst()
