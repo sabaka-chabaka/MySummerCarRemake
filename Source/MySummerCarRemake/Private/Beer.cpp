@@ -27,6 +27,7 @@ void ABeer::Drink_Implementation(AActor* Interactor)
 	if (AMSCCharacter* Character = Cast<AMSCCharacter>(Interactor))
 	{
 		Character->SetAlcohol(0.1, true);
+		Character->SetThirst(-40, true);
 		this->Destroy();
 	}
 }
