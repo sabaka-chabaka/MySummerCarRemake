@@ -78,6 +78,7 @@ protected:
 	void Pee();
 	void StopPee();
 	void Interact();
+	void DrinkableInteract();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;

@@ -1,6 +1,8 @@
 // 2026 sabaka-chabaka
 
 #include "MySummerCarRemake/Public/MSCCharacter.h"
+
+#include "DrinkInterface.h"
 #include "InteractInterface.h"
 #include "MSCSaveGameComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -184,6 +186,7 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Pee", IE_Pressed, this, &AMSCCharacter::Pee);
 	PlayerInputComponent->BindAction("Pee", IE_Released, this, &AMSCCharacter::StopPee);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMSCCharacter::Interact);
+	PlayerInputComponent->BindAction("Drink", IE_Released, this, &AMSCCharacter::DrinkableInteract);
 	
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMSCCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMSCCharacter::MoveRight);
@@ -325,6 +328,27 @@ void AMSCCharacter::Interact()
 				HitComponent->GetComponentLocation(),
 				TargetRotation
 			);
+		}
+	}
+}
+
+void AMSCCharacter::DrinkableInteract()
+{
+	FHitResult Hit;
+	float TraceDistance = 1000.0f;
+	FVector Start = Camera->GetComponentLocation();
+	FVector End = Start + Camera->GetForwardVector() * TraceDistance;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
+	if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (!HitActor) return;
+
+		if (HitActor->Implements<UDrinkInterface>())
+		{
+			IDrinkInterface::Execute_Drink(HitActor, this);
 		}
 	}
 }

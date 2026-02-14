@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractInterface.h"
+#include "DrinkInterface.h"
 #include "GameFramework/Actor.h"
 #include "Beer.generated.h"
 
 UCLASS()
-class MYSUMMERCARREMAKE_API ABeer : public AActor, public IInteractInterface
+class MYSUMMERCARREMAKE_API ABeer : public AActor, public IDrinkInterface
 {
 	GENERATED_BODY()
 
@@ -25,6 +25,5 @@ public:
 	UStaticMeshComponent* Mesh;
 	
 public:
-	virtual void Interact_Implementation(AActor* Interactor) override;
-	void Drink(AActor* Interactor);
+	virtual void Drink_Implementation(AActor* Interactor) override;
 };

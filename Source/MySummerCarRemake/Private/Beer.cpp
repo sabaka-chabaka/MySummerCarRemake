@@ -7,6 +7,9 @@
 ABeer::ABeer()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BeerMesh"));
+	Mesh->SetupAttachment(RootComponent);
+	Mesh->SetSimulatePhysics(true);
 }
 
 void ABeer::BeginPlay()
@@ -19,17 +22,11 @@ void ABeer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ABeer::Interact_Implementation(AActor* Interactor)
-{
-	IInteractInterface::Interact_Implementation(Interactor);
-	Drink(Interactor);
-}
-
-void ABeer::Drink(AActor* Interactor)
+void ABeer::Drink_Implementation(AActor* Interactor)
 {
 	if (AMSCCharacter* Character = Cast<AMSCCharacter>(Interactor))
 	{
-		Character->SetAlcohol(0.2, true);
+		Character->SetAlcohol(0.1, true);
 		this->Destroy();
 	}
 }
