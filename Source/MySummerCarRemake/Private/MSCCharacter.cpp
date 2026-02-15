@@ -3,6 +3,7 @@
 #include "MySummerCarRemake/Public/MSCCharacter.h"
 
 #include "DrinkInterface.h"
+#include "EatInterface.h"
 #include "InteractInterface.h"
 #include "MSCSaveGameComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -346,9 +347,13 @@ void AMSCCharacter::DrinkableInteract()
 		AActor* HitActor = Hit.GetActor();
 		if (!HitActor) return;
 
-		if (HitActor->Implements<UDrinkInterface>())
+		if (HitActor->Implements<IDrinkInterface>())
 		{
 			IDrinkInterface::Execute_Drink(HitActor, this);
+		}
+		else if (HitActor->Implements<IEatInterface>())
+		{
+			IEatInterface::Execute_Hunger(HitActor, this);
 		}
 	}
 }
