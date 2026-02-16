@@ -22,4 +22,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	virtual void Hunger_Implementation(AActor* Interactor) override;
+	
+	UPROPERTY(EditAnywhere, Category="Mesh")
+	class UStaticMeshComponent* Mesh;
 };

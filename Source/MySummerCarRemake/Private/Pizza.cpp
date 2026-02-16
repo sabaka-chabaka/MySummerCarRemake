@@ -7,6 +7,9 @@
 APizza::APizza()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PizzaMesh"));
+	Mesh->SetupAttachment(RootComponent);
+	Mesh->SetSimulatePhysics(true);
 }
 
 void APizza::BeginPlay()
