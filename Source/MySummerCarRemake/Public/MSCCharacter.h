@@ -68,6 +68,9 @@ public:
 	UPROPERTY(EditAnywhere, Category="Spawning")
 	FVector RespawnLocation;
 	
+	UPROPERTY(EditAnywhere, Category="Satana")
+	TArray<FString> FuckStrings;
+	
 protected:
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -79,6 +82,7 @@ protected:
 	void StopPee();
 	void Interact();
 	void DrinkableInteract();
+	void Fuck();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;

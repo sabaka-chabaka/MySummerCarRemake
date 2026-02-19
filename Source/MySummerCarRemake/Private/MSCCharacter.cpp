@@ -5,6 +5,7 @@
 #include "DrinkInterface.h"
 #include "EatInterface.h"
 #include "InteractInterface.h"
+#include "MSCHUD.h"
 #include "MSCSaveGameComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -188,6 +189,7 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Pee", IE_Released, this, &AMSCCharacter::StopPee);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMSCCharacter::Interact);
 	PlayerInputComponent->BindAction("Drink", IE_Released, this, &AMSCCharacter::DrinkableInteract);
+	PlayerInputComponent->BindAction("Fuck", IE_Pressed, this, &AMSCCharacter::Fuck);
 	
 	PlayerInputComponent->BindAxis("MoveForward", this, &AMSCCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMSCCharacter::MoveRight);
@@ -354,6 +356,23 @@ void AMSCCharacter::DrinkableInteract()
 		else if (HitActor->Implements<IEatInterface>())
 		{
 			IEatInterface::Execute_Hunger(HitActor, this);
+		}
+	}
+}
+
+void AMSCCharacter::Fuck()
+{
+	if (FuckStrings.Num() > 0)
+	{
+		int32 RandomIndex = FMath::RandRange(0, FuckStrings.Num() -1);
+		FString Fuck = FuckStrings[RandomIndex];
+		if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		{
+			if (AMSCHUD* MSCHUD = Cast<AMSCHUD>(PC->GetHUD()))
+			{
+				MSCHUD->ShowSubtitle(Fuck, 5);
+				SetStress(-0.5, true);
+			}
 		}
 	}
 }

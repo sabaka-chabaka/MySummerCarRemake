@@ -14,6 +14,8 @@ class MYSUMMERCARREMAKE_API AMSCHUD : public AHUD
 protected:
 	virtual void BeginPlay() override;
 	
+	FTimerHandle SubtitleTimerHandle;
+	
 public:
 	virtual void Tick(float DeltaTime) override;
 	
@@ -28,4 +30,10 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Subtitle")
 	TSubclassOf<class UUserWidget> SubtitleWidgetClass;
+	
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void ShowSubtitle(FString InText, float Duration);
+	
+	UFUNCTION(BlueprintCallable, Category = "HUD")
+	void HideSubtitle();
 };

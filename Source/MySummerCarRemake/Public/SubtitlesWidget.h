@@ -14,6 +14,7 @@ class MYSUMMERCARREMAKE_API USubtitlesWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 	
+public:
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* TextBlockSubtitles;
 };
