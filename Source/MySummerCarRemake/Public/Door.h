@@ -8,7 +8,7 @@
 #include "Door.generated.h"
 
 UCLASS()
-class MYSUMMERCARREMAKE_API ADoor : public AActor, IInteractInterface
+class MYSUMMERCARREMAKE_API ADoor : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 
