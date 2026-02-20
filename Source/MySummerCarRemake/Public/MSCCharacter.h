@@ -77,7 +77,7 @@ protected:
 	void TurnAtRate(float Rate);
 	void LookUp(float Value);
 	void RotateActorWheel(float Value);
-	void Crouch();
+	void ToggleCrouch();
 	void Pee();
 	void StopPee();
 	void Interact();
@@ -121,6 +121,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="References")
 	TSubclassOf<AActor> WeatherController;
+	
+	UPROPERTY(EditAnywhere, Category="References")
+	TSubclassOf<AActor> DoorClass;
 	
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void SetThirst(float ToSet, bool bAdd);

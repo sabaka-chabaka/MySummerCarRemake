@@ -63,4 +63,7 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category = "SaveGame")
 	float Seconds;
+	
+	UPROPERTY(EditAnywhere, Category = "Doors")
+	TMap<int, bool> Doors;
 };

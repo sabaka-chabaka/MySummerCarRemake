@@ -184,7 +184,7 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMSCCharacter::Crouch);
+	PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &AMSCCharacter::ToggleCrouch);
 	PlayerInputComponent->BindAction("Pee", IE_Pressed, this, &AMSCCharacter::Pee);
 	PlayerInputComponent->BindAction("Pee", IE_Released, this, &AMSCCharacter::StopPee);
 	PlayerInputComponent->BindAction("Interact", IE_Released, this, &AMSCCharacter::Interact);
@@ -249,7 +249,7 @@ void AMSCCharacter::RotateActorWheel(float Value)
 	}
 }
 
-void AMSCCharacter::Crouch()
+void AMSCCharacter::ToggleCrouch()
 {
 	switch (CrouchState)
 	{
@@ -349,11 +349,11 @@ void AMSCCharacter::DrinkableInteract()
 		AActor* HitActor = Hit.GetActor();
 		if (!HitActor) return;
 
-		if (HitActor->Implements<IDrinkInterface>())
+		if (HitActor->Implements<UDrinkInterface>())
 		{
 			IDrinkInterface::Execute_Drink(HitActor, this);
 		}
-		else if (HitActor->Implements<IEatInterface>())
+		else if (HitActor->Implements<UEatInterface>())
 		{
 			IEatInterface::Execute_Hunger(HitActor, this);
 		}

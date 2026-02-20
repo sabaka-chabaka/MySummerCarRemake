@@ -1,6 +1,8 @@
 // 2026 sabaka-chabaka
 
 #include "SaveGameToilet.h"
+
+#include "Door.h"
 #include "Kismet/GameplayStatics.h"
 #include "MSCSaveGameComponent.h"
 #include "MSCCharacter.h"
@@ -53,6 +55,20 @@ void ASaveGameToilet::Save()
 				SaveGameInstance->Seconds = WeatherController->Seconds;
 			}
 
+			TArray<AActor*> Doors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), PlayerCharacter->DoorClass, Doors);
+
+			for (AActor* Ac : Doors)
+			{
+				if (Ac != nullptr)
+				{
+					if (ADoor* Door = Cast<ADoor>(Ac))
+					{
+						SaveGameInstance->Doors.Add(Door->ID, Door->bOpened);
+					}
+				}
+			}
+			
 			if (UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("ManualSave"), 0))
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Game Saved successfully!"));
