@@ -12,9 +12,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "NiagaraComponent.h"
-DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
-
 #include "Camera/CameraComponent.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogMSCCharacter, All, All);
 
 AMSCCharacter::AMSCCharacter()
 {
