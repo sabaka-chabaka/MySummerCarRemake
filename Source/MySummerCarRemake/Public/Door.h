@@ -29,6 +29,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Status")
 	bool bOpened;
 	
+	UPROPERTY(EditAnywhere, Category="Status")
+	FRotator TargetRot;
+	
 protected:
 	UPROPERTY(EditAnywhere, Category="Mesh")
 	class UStaticMeshComponent* StaticMeshComponent;

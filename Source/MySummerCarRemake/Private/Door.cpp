@@ -14,11 +14,15 @@ ADoor::ADoor()
 void ADoor::BeginPlay()
 {
 	Super::BeginPlay();
+	TargetRot = ClosedRot;
 }
 
 void ADoor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	FRotator CurrentRot = StaticMeshComponent->GetRelativeRotation();
+	FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, DeltaTime, 5.0f);
+	StaticMeshComponent->SetRelativeRotation(NewRot);
 }
 
 void ADoor::Interact_Implementation(AActor* Interactor)
@@ -36,10 +40,12 @@ void ADoor::Interact_Implementation(AActor* Interactor)
 
 void ADoor::Open()
 {
-	StaticMeshComponent->SetRelativeRotation(OpenedRot);
+	bOpened = true;
+	TargetRot = OpenedRot;
 }
 
 void ADoor::Close()
 {
-	StaticMeshComponent->SetRelativeRotation(ClosedRot);
+	bOpened = false;
+	TargetRot = ClosedRot;
 }
