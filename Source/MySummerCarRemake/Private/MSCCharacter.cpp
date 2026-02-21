@@ -2,6 +2,7 @@
 
 #include "MySummerCarRemake/Public/MSCCharacter.h"
 
+#include "Door.h"
 #include "DrinkInterface.h"
 #include "EatInterface.h"
 #include "InteractInterface.h"
@@ -87,6 +88,18 @@ void AMSCCharacter::BeginPlay()
 				WC->SetHours(Save->Hours, false);
 				WC->SetMinutes(Save->Minutes, false);
 				WC->SetSeconds(Save->Seconds, false);
+			}
+			TArray<AActor*> Doors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), DoorClass, Doors);
+			for (AActor* DoorActor : Doors)
+			{
+				if (ADoor* Door = Cast<ADoor>(DoorActor))
+				{
+					if (Doors.FindByKey(Door->ID))
+					{
+						Door->bOpened = Doors[Door->ID];
+					}
+				}
 			}
 		}
 	}
