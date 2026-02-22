@@ -98,6 +98,14 @@ void AMSCCharacter::BeginPlay()
 					if (Doors.FindByKey(Door->ID))
 					{
 						Door->bOpened = Doors[Door->ID];
+						if (Door->bOpened)
+						{
+							Door->Open();
+						}
+						else
+						{
+							Door->Close();
+						}
 					}
 				}
 			}

@@ -32,12 +32,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Status")
 	FRotator TargetRot;
 	
+	void Open();
+	void Close();
+	
 protected:
 	UPROPERTY(EditAnywhere, Category="Mesh")
 	class UStaticMeshComponent* StaticMeshComponent;
-	
-	void Open();
-	void Close();
 	
 	UPROPERTY(EditAnywhere, Category="Mesh")
 	FRotator ClosedRot;
