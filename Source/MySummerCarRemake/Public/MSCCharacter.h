@@ -83,6 +83,19 @@ protected:
 	void Interact();
 	void DrinkableInteract();
 	void Fuck();
+
+	// ─── Мопед — перенаправление ввода ───
+	void InputMopedThrottle(float Value);
+	void InputMopedBrake(float Value);
+	void InputMopedSteer(float Value);
+	void InputMopedClutchPress();
+	void InputMopedClutchRelease();
+	void InputMopedHandbrakePress();
+	void InputMopedHandbrakeRelease();
+	void InputMopedGearUp();
+	void InputMopedGearDown();
+	void InputMopedStarterPress();
+	void InputMopedStarterRelease();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;
@@ -125,6 +138,18 @@ public:
 	UPROPERTY(EditAnywhere, Category="References")
 	TSubclassOf<AActor> DoorClass;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Moped")
+	class AMopedVehicle* CurrentMoped = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void TryInteractMoped(AMopedVehicle* Moped);
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void DismountMoped();
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	bool IsRidingMoped() const { return CurrentMoped != nullptr; }
+
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void SetThirst(float ToSet, bool bAdd);
 	

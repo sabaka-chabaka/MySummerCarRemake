@@ -1,6 +1,7 @@
 // 2026 sabaka-chabaka
 
 #include "MySummerCarRemake/Public/MSCCharacter.h"
+#include "MySummerCarRemake/Public/MopedVehicle.h"
 
 #include "Door.h"
 #include "DrinkInterface.h"
@@ -217,6 +218,21 @@ void AMSCCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAxis("TurnAtRate", this, &AMSCCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &AMSCCharacter::LookUp);
 	PlayerInputComponent->BindAxis("RotateActorWheel", this, &AMSCCharacter::RotateActorWheel);
+
+	// ─── Мопед (активны только когда CurrentMoped != nullptr) ───
+	PlayerInputComponent->BindAxis("MopedThrottle",  this, &AMSCCharacter::InputMopedThrottle);
+	PlayerInputComponent->BindAxis("MopedBrake",     this, &AMSCCharacter::InputMopedBrake);
+	PlayerInputComponent->BindAxis("MopedSteer",     this, &AMSCCharacter::InputMopedSteer);
+
+	PlayerInputComponent->BindAction("MopedClutch",      IE_Pressed,  this, &AMSCCharacter::InputMopedClutchPress);
+	PlayerInputComponent->BindAction("MopedClutch",      IE_Released, this, &AMSCCharacter::InputMopedClutchRelease);
+	PlayerInputComponent->BindAction("MopedHandbrake",   IE_Pressed,  this, &AMSCCharacter::InputMopedHandbrakePress);
+	PlayerInputComponent->BindAction("MopedHandbrake",   IE_Released, this, &AMSCCharacter::InputMopedHandbrakeRelease);
+	PlayerInputComponent->BindAction("MopedGearUp",      IE_Pressed,  this, &AMSCCharacter::InputMopedGearUp);
+	PlayerInputComponent->BindAction("MopedGearDown",    IE_Pressed,  this, &AMSCCharacter::InputMopedGearDown);
+	PlayerInputComponent->BindAction("MopedStarter",     IE_Pressed,  this, &AMSCCharacter::InputMopedStarterPress);
+	PlayerInputComponent->BindAction("MopedStarter",     IE_Released, this, &AMSCCharacter::InputMopedStarterRelease);
+	PlayerInputComponent->BindAction("MopedDismount",    IE_Pressed,  this, &AMSCCharacter::DismountMoped);
 }
 
 void AMSCCharacter::MoveForward(float Value)
@@ -323,6 +339,12 @@ void AMSCCharacter::Interact()
 		PhysicsHandle->ReleaseComponent();
 		return;
 	}
+
+	if (CurrentMoped)
+	{
+		DismountMoped();
+		return;
+	}
 	
 	FHitResult Hit;
 	float TraceDistance = 1000.0f;
@@ -335,6 +357,12 @@ void AMSCCharacter::Interact()
 	{
 		AActor* HitActor = Hit.GetActor();
 		if (!HitActor) return;
+
+		if (AMopedVehicle* Moped = Cast<AMopedVehicle>(HitActor))
+		{
+			TryInteractMoped(Moped);
+			return;
+		}
 
 		if (HitActor->Implements<UInteractInterface>())
 		{
@@ -650,4 +678,74 @@ void AMSCCharacter::ChangedCigarettes()
 void AMSCCharacter::RespawnedPlayer()
 {
 	UE_LOG(LogMSCCharacter, Display , TEXT("Respawned player"));
+}
+
+void AMSCCharacter::TryInteractMoped(AMopedVehicle* Moped)
+{
+	if (!Moped) return;
+	CurrentMoped = Moped;
+	Moped->TryMountCharacter(this);
+}
+
+void AMSCCharacter::DismountMoped()
+{
+	if (!CurrentMoped) return;
+	AMopedVehicle* Moped = CurrentMoped;
+	CurrentMoped = nullptr;
+	Moped->DismountCharacter();
+}
+
+void AMSCCharacter::InputMopedThrottle(float Value)
+{
+	if (CurrentMoped) CurrentMoped->MopedThrottle(Value);
+}
+
+void AMSCCharacter::InputMopedBrake(float Value)
+{
+	if (CurrentMoped) CurrentMoped->MopedBrake(Value);
+}
+
+void AMSCCharacter::InputMopedSteer(float Value)
+{
+	if (CurrentMoped) CurrentMoped->MopedSteer(Value);
+}
+
+void AMSCCharacter::InputMopedClutchPress()
+{
+	if (CurrentMoped) CurrentMoped->MopedClutchPress();
+}
+
+void AMSCCharacter::InputMopedClutchRelease()
+{
+	if (CurrentMoped) CurrentMoped->MopedClutchRelease();
+}
+
+void AMSCCharacter::InputMopedHandbrakePress()
+{
+	if (CurrentMoped) CurrentMoped->MopedHandbrakePress();
+}
+
+void AMSCCharacter::InputMopedHandbrakeRelease()
+{
+	if (CurrentMoped) CurrentMoped->MopedHandbrakeRelease();
+}
+
+void AMSCCharacter::InputMopedGearUp()
+{
+	if (CurrentMoped) CurrentMoped->MopedGearUp();
+}
+
+void AMSCCharacter::InputMopedGearDown()
+{
+	if (CurrentMoped) CurrentMoped->MopedGearDown();
+}
+
+void AMSCCharacter::InputMopedStarterPress()
+{
+	if (CurrentMoped) CurrentMoped->PressStarter();
+}
+
+void AMSCCharacter::InputMopedStarterRelease()
+{
+	if (CurrentMoped) CurrentMoped->ReleaseStarter();
 }
