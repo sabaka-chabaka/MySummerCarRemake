@@ -90,24 +90,17 @@ void AMSCCharacter::BeginPlay()
 				WC->SetMinutes(Save->Minutes, false);
 				WC->SetSeconds(Save->Seconds, false);
 			}
-			TArray<AActor*> Doors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), DoorClass, Doors);
-			for (AActor* DoorActor : Doors)
+			TArray<AActor*> DoorActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), DoorClass, DoorActors);
+
+			for (AActor* Actor : DoorActors)
 			{
-				if (ADoor* Door = Cast<ADoor>(DoorActor))
+				ADoor* Door = Cast<ADoor>(Actor);
+				if (Door && Save->Doors.Contains(Door->ID)) 
 				{
-					if (Doors.FindByKey(Door->ID))
-					{
-						Door->bOpened = Cast<ADoor>(Doors[Door->ID])->bOpened;
-						if (Door->bOpened)
-						{
-							Door->Open();
-						}
-						else
-						{
-							Door->Close();
-						}
-					}
+					Door->bOpened = Cast<ADoor>(DoorActors[Door->ID]);
+					
+					Door->bOpened ? Door->Open() : Door->Close();
 				}
 			}
 		}
