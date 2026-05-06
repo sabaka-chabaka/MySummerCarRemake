@@ -98,7 +98,7 @@ void AMSCCharacter::BeginPlay()
 				ADoor* Door = Cast<ADoor>(Actor);
 				if (Door && Save->Doors.Contains(Door->ID)) 
 				{
-					Door->bOpened = Cast<ADoor>(DoorActors[Door->ID]);
+					Door->bOpened = Cast<ADoor>(DoorActors[Door->ID])->bOpened;
 					
 					Door->bOpened ? Door->Open() : Door->Close();
 				}
