@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Actor.h"
 #include "MopedVehicle.generated.h"
 
 USTRUCT(BlueprintType)
@@ -18,7 +18,7 @@ struct FMopedWheel
 	float Radius = 28.f;
 
 	UPROPERTY(EditAnywhere, Category="Wheel")
-	float SuspensionLength = 20.f;
+	float SuspensionLength = 18.f;
 
 	UPROPERTY(EditAnywhere, Category="Wheel")
 	float SpringStiffness = 18000.f;
@@ -35,14 +35,13 @@ struct FMopedWheel
 	UPROPERTY(EditAnywhere, Category="Wheel")
 	bool bSteered = false;
 
-	float SuspensionVelocity = 0.f;
 	float SuspensionCompression = 0.f;
-	float NormalForce = 0.f;
-	float AngularVelocity = 0.f;
-	FVector ContactPoint = FVector::ZeroVector;
-	FVector ContactNormal = FVector::UpVector;
-	bool bGrounded = false;
-	float VisualRotationAngle = 0.f;
+	float SuspensionVelocity    = 0.f;
+	float NormalForce           = 0.f;
+	float AngularVelocity       = 0.f;
+	FVector ContactPoint        = FVector::ZeroVector;
+	FVector ContactNormal       = FVector::UpVector;
+	bool bGrounded              = false;
 };
 
 USTRUCT(BlueprintType)
@@ -54,8 +53,16 @@ struct FGearRatio
 	float Ratio = 1.f;
 };
 
+UENUM(BlueprintType)
+enum class EStarterState : uint8
+{
+	Idle,
+	Cranking,
+	Running
+};
+
 UCLASS()
-class MYSUMMERCARREMAKE_API AMopedVehicle : public APawn
+class MYSUMMERCARREMAKE_API AMopedVehicle : public AActor
 {
 	GENERATED_BODY()
 
@@ -66,8 +73,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void Tick(float DeltaTime) override
 
 	UPROPERTY(VisibleAnywhere, Category="Moped")
 	UStaticMeshComponent* BodyMesh;
@@ -79,10 +85,13 @@ public:
 	UStaticMeshComponent* RearWheelMesh;
 
 	UPROPERTY(VisibleAnywhere, Category="Moped")
+	USceneComponent* SeatSocket;
+
+	UPROPERTY(VisibleAnywhere, Category="Moped")
 	class USpringArmComponent* SpringArm;
 
 	UPROPERTY(VisibleAnywhere, Category="Moped")
-	class UCameraComponent* Camera;
+	class UCameraComponent* MopedCamera;
 
 	UPROPERTY(EditAnywhere, Category="Wheels")
 	FMopedWheel FrontWheel;
@@ -105,6 +114,12 @@ public:
 	UPROPERTY(EditAnywhere, Category="Engine")
 	float EngineFrictionCoeff = 0.04f;
 
+	UPROPERTY(EditAnywhere, Category="Engine")
+	float StartProbabilityPerSec = 0.65f;
+
+	UPROPERTY(EditAnywhere, Category="Engine")
+	float CrankDuration = 0.9f;
+	
 	UPROPERTY(EditAnywhere, Category="Gearbox")
 	float FinalDriveRatio = 4.5f;
 
@@ -130,7 +145,7 @@ public:
 	float RearBrakeTorque = 100.f;
 
 	UPROPERTY(EditAnywhere, Category="Physics")
-	float VehicleMass = 90.f;  // kg
+	float VehicleMass = 90.f;
 
 	UPROPERTY(EditAnywhere, Category="Physics")
 	FVector COMOffset = FVector(0.f, 0.f, -10.f);
@@ -144,46 +159,64 @@ public:
 	UPROPERTY(EditAnywhere, Category="Steering")
 	float SteerReturnSpeed = 80.f;
 
+	UPROPERTY(EditAnywhere, Category="Moped")
+	float MountDistance = 150.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Engine")
 	float EngineRPM = 0.f;
 
-	float EngineAngularVelocity = 0.f;
-
-	float CurrentSteerAngle = 0.f;
-
-	float ThrottleInput = 0.f;
-	float BrakeInput = 0.f;
-	float SteerInput = 0.f;
-	bool bClutchPressed = false;
-	bool bHandbrake = false;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Engine")
-	bool bEngineRunning = false;
+	EStarterState StarterState = EStarterState::Idle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Physics")
 	float SpeedKmh = 0.f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Moped")
+	class AMSCCharacter* RidingCharacter = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void TryMountCharacter(AMSCCharacter* Character);
+
+	// Персонаж слезает
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void DismountCharacter();
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void PressStarter();
+
+	UFUNCTION(BlueprintCallable, Category="Moped")
+	void ReleaseStarter();
+
+	void MopedThrottle(float Value);
+	void MopedBrake(float Value);
+	void MopedSteer(float Value);
+	void MopedClutchPress();
+	void MopedClutchRelease();
+	void MopedHandbrakePress();
+	void MopedHandbrakeRelease();
+	void MopedGearUp();
+	void MopedGearDown();
+
 private:
-	void InputThrottle(float Value);
-	void InputBrake(float Value);
-	void InputSteer(float Value);
-	void InputClutch();
-	void InputClutchRelease();
-	void InputHandbrake();
-	void InputHandbrakeRelease();
-	void InputGearUp();
-	void InputGearDown();
-	void InputStartEngine();
-	
+	float EngineAngularVelocity = 0.f;
+	float CurrentSteerAngle     = 0.f;
+	float ThrottleInput         = 0.f;
+	float BrakeInput            = 0.f;
+	float SteerInput            = 0.f;
+	bool  bClutchPressed        = false;
+	bool  bHandbrake            = false;
+
+	float CrankTimer = 0.f;
+
+	UPrimitiveComponent* BodyPrimitive = nullptr;
+
 	void UpdateWheelPhysics(FMopedWheel& Wheel, float DeltaTime);
 	void ApplyWheelForces(FMopedWheel& Wheel, float DeltaTime);
 	void UpdateEngineAndDrivetrain(float DeltaTime);
+	void UpdateStarterCrank(float DeltaTime);
 	void UpdateSteering(float DeltaTime);
-	void UpdateWheelVisuals();
+	void UpdateWheelVisuals(float DeltaTime);
 
 	float GetEngineTorqueFactor(float NormRPM) const;
-
 	float GetCurrentGearRatio() const;
-	
-	UPrimitiveComponent* BodyPrimitive = nullptr;
 };
