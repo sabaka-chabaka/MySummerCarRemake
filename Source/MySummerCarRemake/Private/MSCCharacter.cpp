@@ -98,7 +98,7 @@ void AMSCCharacter::BeginPlay()
 				{
 					if (Doors.FindByKey(Door->ID))
 					{
-						Door->bOpened = Doors[Door->bOpened];
+						Door->bOpened = Cast<ADoor>(Doors[Door->ID])->bOpened;
 						if (Door->bOpened)
 						{
 							Door->Open();
