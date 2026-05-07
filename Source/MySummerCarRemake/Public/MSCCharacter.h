@@ -137,18 +137,6 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="References")
 	TSubclassOf<AActor> DoorClass;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Moped")
-	class AMopedVehicle* CurrentMoped = nullptr;
-
-	UFUNCTION(BlueprintCallable, Category="Moped")
-	void TryInteractMoped(AMopedVehicle* Moped);
-
-	UFUNCTION(BlueprintCallable, Category="Moped")
-	void DismountMoped();
-
-	UFUNCTION(BlueprintCallable, Category="Moped")
-	bool IsRidingMoped() const { return CurrentMoped != nullptr; }
 
 	UFUNCTION(BlueprintCallable, Category="Needs")
 	void SetThirst(float ToSet, bool bAdd);
