@@ -30,10 +30,8 @@ class MYSUMMERCARREMAKE_API AMSCCharacter : public ACharacter
 public:
 	AMSCCharacter();
 
-protected:
 	virtual void BeginPlay() override;
 
-public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -83,19 +81,6 @@ protected:
 	void Interact();
 	void DrinkableInteract();
 	void Fuck();
-
-	// ─── Мопед — перенаправление ввода ───
-	void InputMopedThrottle(float Value);
-	void InputMopedBrake(float Value);
-	void InputMopedSteer(float Value);
-	void InputMopedClutchPress();
-	void InputMopedClutchRelease();
-	void InputMopedHandbrakePress();
-	void InputMopedHandbrakeRelease();
-	void InputMopedGearUp();
-	void InputMopedGearDown();
-	void InputMopedStarterPress();
-	void InputMopedStarterRelease();
 	
 	FTimerHandle ThirstKillHandle;
 	FTimerHandle HungerKillHandle;
