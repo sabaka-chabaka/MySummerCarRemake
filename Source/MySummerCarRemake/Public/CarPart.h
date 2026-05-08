@@ -59,7 +59,7 @@ public:
 	class ACarBody* InstalledOn;
 
 	UFUNCTION(BlueprintCallable, Category = "CarPart")
-	void AttachToCar(USceneComponent* ParentComponent, FName SocketName);
+	void AttachToCar(USceneComponent* TheParentComponent, FName SocketName);
 	
 	UFUNCTION(BlueprintCallable, Category = "CarPart")
 	void DetachFromCar();

@@ -53,9 +53,9 @@ void ACarPart::SetPhysicsSimulation(bool bSimulate)
 	}
 }
 
-void ACarPart::AttachToCar(USceneComponent* ParentComponent, FName SocketName)
+void ACarPart::AttachToCar(USceneComponent* TheParentComponent, FName SocketName)
 {
-	if (!ParentComponent)
+	if (!TheParentComponent)
 	{
 		UE_LOG(LogCarPart, Warning, TEXT("AttachToCar: ParentComponent is null for %s"), *GetName());
 		return;
@@ -64,7 +64,7 @@ void ACarPart::AttachToCar(USceneComponent* ParentComponent, FName SocketName)
 	SetPhysicsSimulation(false);
 	FAttachmentTransformRules Rules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	
-	AttachToComponent(ParentComponent, Rules, SocketName);
+	AttachToComponent(TheParentComponent, Rules, SocketName);
 	PartState = ECarPartState::Installed;
 	
 	UE_LOG(LogCarPart, Log, TEXT("Part '%s' attached to socket '%s'"), *PartDisplayName, *SocketName.ToString());
